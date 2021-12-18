@@ -1,4 +1,4 @@
-package az.rock.boostarray;
+package az.rock.util;
 
 public interface RockArray {
 }
