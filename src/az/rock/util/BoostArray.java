@@ -2,23 +2,27 @@ package az.rock.util;
 
 import java.util.*;
 
-public class BoostArray<E> extends AbstractList<E>
-        implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
+public class BoostArray<E> extends RockArray<E> {
+
     @java.io.Serial
     private static final long serialVersionUID = 8683452501122892189L;
 
     /**
      * Default initial capacity.
      */
-    private final int DEFAULT_CAPACITY = 10;
+    private final int DEFAULT_CAPACITY = 1000;
 
     private final float INCREMENT_CAPACITY_RANGE = 1.1F;
 
     private final int NULL_SAFETY_CAPACITY = DEFAULT_CAPACITY / 2;
 
-    private E[] boostArray;
+    private int lastElementIndex =0;
+
+    private  E[] boostArray;
 
     private final int[] nullSafety = new int[NULL_SAFETY_CAPACITY];
+
+    private int nullSafetyLastIndex=0;
 
     public BoostArray() {
         boostArray = (E[]) new Object[DEFAULT_CAPACITY];
@@ -35,6 +39,11 @@ public class BoostArray<E> extends AbstractList<E>
     }
 
     @Override
+    public int fixedLength() {
+        return 0;
+    }
+
+    @Override
     public BoostArray<E> clone() {
         try {
             BoostArray<E> clone = (BoostArray<E>) super.clone();
@@ -47,7 +56,36 @@ public class BoostArray<E> extends AbstractList<E>
 
     @Override
     public boolean add(E e) {
-
-        return super.add(e);
+        try {
+            boostArray[lastElementIndex] = e;
+            lastElementIndex++;
+            return true;
+        }catch (Exception exception){
+            exception.printStackTrace();
+            return false;
+        }
     }
+
+    @Override
+    public E remove(int index) {
+        E e;
+        try {
+            nullSafety[nullSafetyLastIndex] = index;
+            e = boostArray[index];
+            boostArray[index] = null;
+            return e;
+        }catch (Exception exception){
+            exception.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "BoostArray{" +
+                "boostArray=" + Arrays.toString(boostArray) +
+                '}';
+    }
+
+
 }
