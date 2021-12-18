@@ -45,13 +45,7 @@ public class BoostArray<E> extends RockArray<E> {
 
     @Override
     public BoostArray<E> clone() {
-        try {
-            BoostArray<E> clone = (BoostArray<E>) super.clone();
-            // TODO: copy mutable state here, so the clone can't change the internals of the original
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
+        return (BoostArray<E>) super.clone();
     }
 
     @Override
