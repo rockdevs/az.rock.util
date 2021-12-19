@@ -1,5 +1,8 @@
 package az.rock.util;
 
+import az.rock.util.exceptions.EmptyBoostArrayException;
+import az.rock.util.exceptions.NegativeIndexException;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 

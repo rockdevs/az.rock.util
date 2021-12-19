@@ -1,4 +1,4 @@
-package az.rock.util;
+package az.rock.util.exceptions;
 
 public class NegativeIndexException extends Exception{
 }
