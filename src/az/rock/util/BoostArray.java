@@ -3,33 +3,33 @@ package az.rock.util;
 
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
 
 public class BoostArray<T> extends Clim<T> {
 
 
     private int boostArrSize = 0;
-    private int DEFAULT_CAPACITY = 1000;
-    private float INCREMENT_CAPACITY = 1.75F;
+    private int defaultCapacity = 10000;
+    private float incrementCapacity = 1.75F;
 
-    private Object[] boostArray = new Object[DEFAULT_CAPACITY];
+    private Object[] boostArray = new Object[defaultCapacity];
 
     private int nullArrSize = 0;
-    private final int canNullObjectOnArray = DEFAULT_CAPACITY/4;
-    private final int[] NULL_INDEXES_ARRAY = new int[DEFAULT_CAPACITY /3];
+    private final int canNullObjectOnArray = defaultCapacity /4;
+    private final int[] NULL_INDEXES_ARRAY = new int[defaultCapacity /3];
+
+    private Object[] newArr;
 
     public BoostArray() {
     }
 
     public BoostArray(int defaultCapacity) {
-        this.DEFAULT_CAPACITY = defaultCapacity;
+        this.defaultCapacity = defaultCapacity;
     }
 
     public BoostArray(int defaultCapacity,float incrementCapacity) {
-        this.DEFAULT_CAPACITY = defaultCapacity;
-        this.INCREMENT_CAPACITY = incrementCapacity;
+        this.defaultCapacity = defaultCapacity;
+        this.incrementCapacity = incrementCapacity;
     }
 
 
@@ -40,7 +40,7 @@ public class BoostArray<T> extends Clim<T> {
 
     private boolean isEmpty(int index) {
         boolean result = false;
-        if (index <= this.DEFAULT_CAPACITY) {
+        if (index <= this.defaultCapacity) {
             result = this.boostArray[index] == null;
         }
 
@@ -58,30 +58,31 @@ public class BoostArray<T> extends Clim<T> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public T get(int index) {
-        return (T) this.boostArray[index];
+        return (T) boostArray[index];
     }
 
     @Override
-    public boolean add(T o) {
+    public boolean add(Object o) {
         if(boostArray.length<=boostArrSize){
-            reorder();
+            grow();
         }
         this.boostArray[this.boostArrSize] = o;
         this.boostArrSize++;
         return true;
     }
 
-    private void reorder(){
-        DEFAULT_CAPACITY *=INCREMENT_CAPACITY;
-        Object[] newArr = new Object[this.DEFAULT_CAPACITY];
+    private void grow(){
+        defaultCapacity *= incrementCapacity;
+        newArr = new Object[this.defaultCapacity];
 
         for (int i = 0; i < this.boostArrSize; i++) {
             if (this.boostArray[i] != null) {
-                newArr[i] = this.boostArray[i];
+                newArr[i] = boostArray[i];
             }
         }
-        this.boostArray = newArr;
+        boostArray = newArr;
     }
     @Override
     public boolean addAll(Collection<? extends T> c) {
@@ -89,8 +90,8 @@ public class BoostArray<T> extends Clim<T> {
     }
 
     @Override
-    public void add(int index, T element) {
-        super.add(index, element);
+    public void add(int index, Object element) {
+        super.add(index, (T) element);
     }
 
     @Override
@@ -133,13 +134,15 @@ public class BoostArray<T> extends Clim<T> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public T[] toArray() {
         return (T[]) this.boostArray;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Iterator<T> iterator() {
-        return ((Stream) Arrays.stream(this.boostArray).parallel()).iterator();
+        return (Iterator<T>) ( Arrays.stream(this.boostArray).parallel()).iterator();
     }
 
     @Override
@@ -148,8 +151,9 @@ public class BoostArray<T> extends Clim<T> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void clear() {
-        this.boostArray = (T[]) new Object[DEFAULT_CAPACITY];
+        this.boostArray = (T[]) new Object[defaultCapacity];
     }
 
 
