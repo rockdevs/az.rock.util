@@ -18,14 +18,34 @@ public class BoostArray<E> extends Clim<E> {
 
     private int lastElementIndex =0;
 
-    private  E[] boostArray;
+    private  E[] boostArray = null;
 
-    private final int[] nullSafety = new int[NULL_SAFETY_CAPACITY];
+    private  int[] nullSafety = new int[NULL_SAFETY_CAPACITY];
 
     private int nullSafetyLastIndex=0;
 
     public BoostArray() {
         boostArray = (E[]) new Object[DEFAULT_CAPACITY];
+    }
+
+
+    public BoostArray(E[] arr) {
+        boostArray = (E[]) new Object[DEFAULT_CAPACITY];
+
+        int i =0;
+        while (i < arr.length){
+            boostArray[i] = arr[i];
+            i++;
+        }
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends E> c) {
+        if(boostArray  == null){
+            boostArray = (E[]) new Object[DEFAULT_CAPACITY];
+        }
+
+        return super.addAll(c);
     }
 
     @Override
@@ -40,13 +60,9 @@ public class BoostArray<E> extends Clim<E> {
 
     @Override
     public int fixedLength() {
-        return 0;
+        return boostArray.length-(lastElementIndex+1);
     }
 
-    @Override
-    public BoostArray<E> clone() {
-        return (BoostArray<E>) super.clone();
-    }
 
     @Override
     public boolean add(E e) {
@@ -87,7 +103,9 @@ public class BoostArray<E> extends Clim<E> {
 
     private void extend(){
         DEFAULT_CAPACITY = (int) (DEFAULT_CAPACITY*INCREMENT_CAPACITY_RANGE);
+
         E[] newArr = (E[]) new Object[DEFAULT_CAPACITY];
+
         int i = 0;
         while (i<DEFAULT_CAPACITY){
             if(boostArray[i]!=null){
@@ -95,7 +113,24 @@ public class BoostArray<E> extends Clim<E> {
             }
             i++;
         }
+
+        nullSafety = new int[DEFAULT_CAPACITY/2];
+
+        nullSafetyLastIndex = 0;
+
         boostArray = newArr;
     }
+
+    @Override
+    public E[] toArray() {
+        extend();
+        return boostArray;
+    }
+
+    @Override
+    public BoostArray<E> clone() {
+        return (BoostArray<E>) super.clone();
+    }
+
 
 }
