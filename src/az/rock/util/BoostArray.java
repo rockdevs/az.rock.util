@@ -1,34 +1,31 @@
 package az.rock.util;
 
-
-
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BoostArray<T> extends Clim<T> {
 
 
-    private int boostArrSize = 0;
-    private int defaultCapacity = 10000;
+    private int lastElementIndex = 0;
+    private int initialCapacity = 1000;
     private float incrementCapacity = 1.75F;
 
-    private Object[] boostArray = new Object[defaultCapacity];
+    private Object[] boostArray = new Object[initialCapacity];
 
     private int nullArrSize = 0;
-    private final int canNullObjectOnArray = defaultCapacity /4;
-    private final int[] NULL_INDEXES_ARRAY = new int[defaultCapacity /3];
+    private final int canNullObjectOnArray = initialCapacity /4;
+    private final int[] NULL_INDEXES_ARRAY = new int[initialCapacity /3];
 
-    private Object[] newArr;
 
     public BoostArray() {
     }
 
-    public BoostArray(int defaultCapacity) {
-        this.defaultCapacity = defaultCapacity;
+    public BoostArray(int initialCapacity) {
+        this.initialCapacity = initialCapacity;
     }
 
-    public BoostArray(int defaultCapacity,float incrementCapacity) {
-        this.defaultCapacity = defaultCapacity;
+    public BoostArray(int initialCapacity, float incrementCapacity) {
+        this.initialCapacity = initialCapacity;
         this.incrementCapacity = incrementCapacity;
     }
 
@@ -40,7 +37,7 @@ public class BoostArray<T> extends Clim<T> {
 
     private boolean isEmpty(int index) {
         boolean result = false;
-        if (index <= this.defaultCapacity) {
+        if (index <= this.initialCapacity) {
             result = this.boostArray[index] == null;
         }
 
@@ -65,19 +62,19 @@ public class BoostArray<T> extends Clim<T> {
 
     @Override
     public boolean add(Object o) {
-        if(boostArray.length<=boostArrSize){
+        if(boostArray.length<= lastElementIndex){
             grow();
         }
-        this.boostArray[this.boostArrSize] = o;
-        this.boostArrSize++;
+        this.boostArray[this.lastElementIndex] = o;
+        this.lastElementIndex++;
         return true;
     }
 
     private void grow(){
-        defaultCapacity *= incrementCapacity;
-        newArr = new Object[this.defaultCapacity];
+        initialCapacity *= incrementCapacity;
+        final Object[] newArr = new Object[this.initialCapacity];
 
-        for (int i = 0; i < this.boostArrSize; i++) {
+        for (int i = 0; i < this.lastElementIndex; i++) {
             if (this.boostArray[i] != null) {
                 newArr[i] = boostArray[i];
             }
@@ -96,14 +93,14 @@ public class BoostArray<T> extends Clim<T> {
 
     @Override
     public boolean remove(Object o) {
-        if (this.boostArrSize <= 0) {
+        if (this.lastElementIndex <= 0) {
             try {
                 throw new EmptyBoostArrayException();
             } catch (EmptyBoostArrayException e) {
                 e.printStackTrace();
             }
         } else {
-            --this.boostArrSize;
+            --this.lastElementIndex;
         }
         return false;
     }
@@ -117,9 +114,9 @@ public class BoostArray<T> extends Clim<T> {
                 e.printStackTrace();
             }
         } else {
-            --this.boostArrSize;
+            --this.lastElementIndex;
             this.boostArray[index] = null;
-            if (index != this.boostArrSize) {
+            if (index != this.lastElementIndex) {
                 this.NULL_INDEXES_ARRAY[this.nullArrSize] = index;
                 ++this.nullArrSize;
             }
@@ -147,18 +144,18 @@ public class BoostArray<T> extends Clim<T> {
 
     @Override
     int fixedLength() {
-        return boostArrSize;
+        return lastElementIndex;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void clear() {
-        this.boostArray = (T[]) new Object[defaultCapacity];
+        this.boostArray = (T[]) new Object[initialCapacity];
     }
 
 
     public void sort() throws EmptyBoostArrayException {
-        if (this.boostArrSize == 0) {
+        if (this.lastElementIndex == 0) {
             throw new EmptyBoostArrayException();
         } else {
             Arrays.sort(this.boostArray);
