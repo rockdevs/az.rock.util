@@ -5,18 +5,15 @@ import java.util.*;
 
 public final class BoostMap<K,V> extends AbstractMap<K,V> implements Map<K,V> {
 
-    private final int initialCapacity  = 1000;
+    private int initialCapacity  = 1000;
 
     private int lastFreeIndex = 0;
 
-    //Keyleri burada tutacam
-    private final Set<KeyNode<K>> keySet = new HashSet<>();
+    private final Set<KeyNode<K>> keySet = new HashSet<>(initialCapacity);
 
-
-
-    //Deyerleri burada tutacam
     @SuppressWarnings("unchecked")
     private final V[] values = (V[]) new Object[initialCapacity];
+
 
     private class KeyNode<K>{
         int index;
@@ -41,6 +38,12 @@ public final class BoostMap<K,V> extends AbstractMap<K,V> implements Map<K,V> {
         }
     }
 
+    public BoostMap() {
+    }
+
+    public BoostMap(int initialCapacity) {
+        this.initialCapacity = initialCapacity;
+    }
 
     @Override
     public V put(K key, V value) {
