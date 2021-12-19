@@ -2,7 +2,7 @@ package az.rock.util;
 
 import java.util.*;
 
-public class BoostArray<E> extends RockArray<E> {
+public class BoostArray<E> extends Clim<E> {
 
     @java.io.Serial
     private static final long serialVersionUID = 8683452501122892189L;
@@ -10,9 +10,9 @@ public class BoostArray<E> extends RockArray<E> {
     /**
      * Default initial capacity.
      */
-    private final int DEFAULT_CAPACITY = 1000;
+    private  int DEFAULT_CAPACITY = 1000;
 
-    private final float INCREMENT_CAPACITY_RANGE = 1.1F;
+    private final float INCREMENT_CAPACITY_RANGE = 1.4F;
 
     private final int NULL_SAFETY_CAPACITY = DEFAULT_CAPACITY / 2;
 
@@ -51,6 +51,9 @@ public class BoostArray<E> extends RockArray<E> {
     @Override
     public boolean add(E e) {
         try {
+            if(lastElementIndex==DEFAULT_CAPACITY){
+                extend();
+            }
             boostArray[lastElementIndex] = e;
             lastElementIndex++;
             return true;
@@ -65,6 +68,7 @@ public class BoostArray<E> extends RockArray<E> {
         E e;
         try {
             nullSafety[nullSafetyLastIndex] = index;
+            nullSafetyLastIndex++;
             e = boostArray[index];
             boostArray[index] = null;
             return e;
@@ -81,5 +85,17 @@ public class BoostArray<E> extends RockArray<E> {
                 '}';
     }
 
+    private void extend(){
+        DEFAULT_CAPACITY = (int) (DEFAULT_CAPACITY*INCREMENT_CAPACITY_RANGE);
+        E[] newArr = (E[]) new Object[DEFAULT_CAPACITY];
+        int i = 0;
+        while (i<DEFAULT_CAPACITY){
+            if(boostArray[i]!=null){
+                newArr[i] = boostArray[i];
+            }
+            i++;
+        }
+        boostArray = newArr;
+    }
 
 }
