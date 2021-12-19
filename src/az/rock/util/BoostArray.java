@@ -18,10 +18,6 @@ public class BoostArray<T> extends Clim<T> {
     private float INCREMENT_CAPACITY = 1.4F;
     private ExecutorService executorService;
 
-    public int getBoostArrSize() {
-        return this.boostArrSize;
-    }
-
     public BoostArray() {
         this.boostArray = (T[]) new Object[this.DEFAULT_CAPACITY];
     }
@@ -169,10 +165,6 @@ public class BoostArray<T> extends Clim<T> {
         }
     }
 
-    public int length() {
-        return this.boostArrSize;
-    }
-
     public boolean flapSearch(Object o) {
         AtomicBoolean result = new AtomicBoolean(false);
         //T[] first = Arrays.copyOfRange(this.boostArray, 0, this.initialCapacity / 2);
@@ -195,4 +187,5 @@ public class BoostArray<T> extends Clim<T> {
 //        });
         return true;
     }
+
 }
