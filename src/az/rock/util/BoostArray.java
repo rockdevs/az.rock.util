@@ -4,60 +4,49 @@ package az.rock.util;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 public class BoostArray<T> extends Clim<T> {
 
-    private T[] arr;
-    private int arrSize = 0;
+    private T[] boostArray;
+    private int boostArrSize = 0;
     private int nullArrSize = 0;
-    private int canNullObjectOnArray = 10;
-    private int initialCapacity = 1;
-    private int[] emptyIndexes;
-    private final int defaultCapacity;
-    private float incrementCapacity;
-    private final ExecutorService executorService;
+    private int DEFAULT_CAPACITY = 1000;
+    private final int canNullObjectOnArray = DEFAULT_CAPACITY/4;
+    private final int[] NULL_INDEXES_ARRAY = new int[DEFAULT_CAPACITY /3];
+    private float INCREMENT_CAPACITY = 1.4F;
+    private ExecutorService executorService;
 
-    public int getArrSize() {
-        return this.arrSize;
+    public int getBoostArrSize() {
+        return this.boostArrSize;
     }
 
     public BoostArray() {
-        this.emptyIndexes = new int[this.canNullObjectOnArray];
-        this.defaultCapacity = 20;
-        this.incrementCapacity = 1.5F;
-        this.executorService = Executors.newFixedThreadPool(4);
-        this.initialCapacity = 20;
-        this.arr = (T[]) new Object[20];
+        this.boostArray = (T[]) new Object[this.DEFAULT_CAPACITY];
     }
 
-    public BoostArray(int initialCapacity) {
-        this.emptyIndexes = new int[this.canNullObjectOnArray];
-        this.defaultCapacity = 20;
-        this.incrementCapacity = 1.5F;
-        this.executorService = Executors.newFixedThreadPool(4);
-        this.initialCapacity = initialCapacity;
-        this.arr = (T[]) new Object[this.initialCapacity];
+    public BoostArray(int defaultCapacity) {
+        this.DEFAULT_CAPACITY = defaultCapacity;
+        this.boostArray = (T[]) new Object[this.DEFAULT_CAPACITY];
     }
 
-    public BoostArray(T[] arr) {
-        this.emptyIndexes = new int[this.canNullObjectOnArray];
-        this.defaultCapacity = 20;
-        this.incrementCapacity = 1.5F;
-        this.executorService = Executors.newFixedThreadPool(4);
-        this.arr = arr;
+    public BoostArray(int defaultCapacity,float incrementCapacity) {
+        this.DEFAULT_CAPACITY = defaultCapacity;
+        this.INCREMENT_CAPACITY = incrementCapacity;
+        this.boostArray = (T[]) new Object[this.DEFAULT_CAPACITY];
     }
 
-    private T[] init() {
-        return null;
+
+    public BoostArray(T[] boostArray) {
+        this.boostArray = boostArray;
     }
+
 
     private boolean isEmpty(int index) {
         boolean result = false;
-        if (index <= this.initialCapacity) {
-            result = this.arr[index] == null;
+        if (index <= this.DEFAULT_CAPACITY) {
+            result = this.boostArray[index] == null;
         }
 
         return result;
@@ -66,7 +55,7 @@ public class BoostArray<T> extends Clim<T> {
     public int firstEmptyNode() {
         int emptyIndex = 0;
 
-        for (Iterator iterator = Arrays.stream(this.arr).iterator(); iterator.hasNext(); ++emptyIndex) {
+        for (Iterator<? extends T> iterator = Arrays.stream(this.boostArray).iterator(); iterator.hasNext(); ++emptyIndex) {
             iterator.next();
         }
 
@@ -75,30 +64,42 @@ public class BoostArray<T> extends Clim<T> {
 
     @Override
     public T get(int index) {
-        return this.arr[index];
+        return this.boostArray[index];
     }
 
+    @Override
     public boolean add(Object o) {
         try {
-            this.arr[this.arrSize] = (T) o;
+            this.boostArray[this.boostArrSize] = (T) o;
         } catch (ArrayIndexOutOfBoundsException var3) {
             this.reorderArray();
-            this.arr[this.arrSize] = (T) o;
+            this.boostArray[this.boostArrSize] = (T) o;
         }
 
-        ++this.arrSize;
+        ++this.boostArrSize;
         return false;
     }
 
+    @Override
+    public boolean addAll(Collection<? extends T> c) {
+        return super.addAll(c);
+    }
+
+    @Override
+    public void add(int index, T element) {
+        super.add(index, element);
+    }
+
+    @Override
     public boolean remove(Object o) {
-        if (this.arrSize <= 0) {
+        if (this.boostArrSize <= 0) {
             try {
                 throw new EmptyBoostArrayException();
             } catch (EmptyBoostArrayException e) {
                 e.printStackTrace();
             }
         } else {
-            --this.arrSize;
+            --this.boostArrSize;
         }
         return false;
     }
@@ -112,10 +113,10 @@ public class BoostArray<T> extends Clim<T> {
                 e.printStackTrace();
             }
         } else {
-            --this.arrSize;
-            this.arr[index] = null;
-            if (index != this.arrSize) {
-                this.emptyIndexes[this.nullArrSize] = index;
+            --this.boostArrSize;
+            this.boostArray[index] = null;
+            if (index != this.boostArrSize) {
+                this.NULL_INDEXES_ARRAY[this.nullArrSize] = index;
                 ++this.nullArrSize;
             }
 
@@ -123,76 +124,75 @@ public class BoostArray<T> extends Clim<T> {
         return null;
     }
 
-    private void reorderArray() {
-        this.initialCapacity = (int) ((float) this.initialCapacity * this.incrementCapacity);
-        T[] newArr = (T[]) new Object[this.initialCapacity];
-
-        for (int i = 0; i < this.arrSize; ++i) {
-            if (this.arr[i] != null) {
-                newArr[i] = this.arr[i];
-            }
-        }
-
-        this.arr = newArr;
-    }
-
-    public void sort() throws EmptyBoostArrayException {
-        if (this.arrSize == 0) {
-            throw new EmptyBoostArrayException();
-        } else {
-            Arrays.sort(this.arr);
-        }
-    }
-
-    public int length() {
-        return this.arrSize;
-    }
-
-    public void clear() {
-        this.arr = (T[]) new Object[20];
-    }
-
-    public void trim() {
-    }
-
-    public Iterator<T> iterator() {
-        return ((Stream) Arrays.stream(this.arr).parallel()).iterator();
+    @Override
+    public int size() {
+        return boostArray.length;
     }
 
     @Override
-    public int size() {
-        return 0;
-    }
-
     public T[] toArray() {
-        return this.arr;
+        return this.boostArray;
     }
 
-    public boolean flapSearch(Object o) {
-        AtomicBoolean result = new AtomicBoolean(false);
-        T[] first = Arrays.copyOfRange(this.arr, 0, this.initialCapacity / 2);
-        T[] two = Arrays.copyOfRange(this.arr, this.initialCapacity / 2, this.initialCapacity);
-        this.executorService.execute(() -> {
-            for (int i = 0; i < this.initialCapacity / 2; ++i) {
-                if (first[i] == o) {
-                    result.set(true);
-                }
-            }
-
-        });
-        this.executorService.execute(() -> {
-            for (int i = 0; i < this.initialCapacity / 2; ++i) {
-                if (two[i] == o) {
-                    result.set(true);
-                }
-            }
-
-        });
-        return true;
+    @Override
+    public Iterator<T> iterator() {
+        return ((Stream) Arrays.stream(this.boostArray).parallel()).iterator();
     }
 
     @Override
     int fixedLength() {
-        return 0;
+        return boostArrSize;
+    }
+
+    @Override
+    public void clear() {
+        this.boostArray = (T[]) new Object[DEFAULT_CAPACITY];
+    }
+
+    private void reorderArray() {
+        this.DEFAULT_CAPACITY = (int) (this.DEFAULT_CAPACITY * this.INCREMENT_CAPACITY);
+        T[] newArr = (T[]) new Object[this.DEFAULT_CAPACITY];
+
+        for (int i = 0; i < this.boostArrSize; i++) {
+            if (this.boostArray[i] != null) {
+                newArr[i] = this.boostArray[i];
+            }
+        }
+        this.boostArray = newArr;
+    }
+
+    public void sort() throws EmptyBoostArrayException {
+        if (this.boostArrSize == 0) {
+            throw new EmptyBoostArrayException();
+        } else {
+            Arrays.sort(this.boostArray);
+        }
+    }
+
+    public int length() {
+        return this.boostArrSize;
+    }
+
+    public boolean flapSearch(Object o) {
+        AtomicBoolean result = new AtomicBoolean(false);
+        //T[] first = Arrays.copyOfRange(this.boostArray, 0, this.initialCapacity / 2);
+        //T[] two = Arrays.copyOfRange(this.boostArray, this.initialCapacity / 2, this.initialCapacity);
+//        this.executorService.execute(() -> {
+//            for (int i = 0; i < this.initialCapacity / 2; ++i) {
+//                if (first[i] == o) {
+//                    result.set(true);
+//                }
+//            }
+//
+//        });
+//        this.executorService.execute(() -> {
+//            for (int i = 0; i < this.initialCapacity / 2; ++i) {
+//                if (two[i] == o) {
+//                    result.set(true);
+//                }
+//            }
+//
+//        });
+        return true;
     }
 }
