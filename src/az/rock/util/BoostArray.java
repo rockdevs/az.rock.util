@@ -9,28 +9,27 @@ import java.util.stream.Stream;
 
 public class BoostArray<T> extends Clim<T> {
 
-    private T[] boostArray;
+
     private int boostArrSize = 0;
-    private int nullArrSize = 0;
     private int DEFAULT_CAPACITY = 1000;
+    private float INCREMENT_CAPACITY = 1.75F;
+
+    private Object[] boostArray = new Object[DEFAULT_CAPACITY];
+
+    private int nullArrSize = 0;
     private final int canNullObjectOnArray = DEFAULT_CAPACITY/4;
     private final int[] NULL_INDEXES_ARRAY = new int[DEFAULT_CAPACITY /3];
-    private float INCREMENT_CAPACITY = 1.4F;
-    private ExecutorService executorService;
 
     public BoostArray() {
-        this.boostArray = (T[]) new Object[this.DEFAULT_CAPACITY];
     }
 
     public BoostArray(int defaultCapacity) {
         this.DEFAULT_CAPACITY = defaultCapacity;
-        this.boostArray = (T[]) new Object[this.DEFAULT_CAPACITY];
     }
 
     public BoostArray(int defaultCapacity,float incrementCapacity) {
         this.DEFAULT_CAPACITY = defaultCapacity;
         this.INCREMENT_CAPACITY = incrementCapacity;
-        this.boostArray = (T[]) new Object[this.DEFAULT_CAPACITY];
     }
 
 
@@ -51,7 +50,7 @@ public class BoostArray<T> extends Clim<T> {
     public int firstEmptyNode() {
         int emptyIndex = 0;
 
-        for (Iterator<? extends T> iterator = Arrays.stream(this.boostArray).iterator(); iterator.hasNext(); ++emptyIndex) {
+        for (Iterator<? extends T> iterator = (Iterator<? extends T>) Arrays.stream(this.boostArray).iterator(); iterator.hasNext(); ++emptyIndex) {
             iterator.next();
         }
 
@@ -60,22 +59,30 @@ public class BoostArray<T> extends Clim<T> {
 
     @Override
     public T get(int index) {
-        return this.boostArray[index];
+        return (T) this.boostArray[index];
     }
 
     @Override
-    public boolean add(Object o) {
-        try {
-            this.boostArray[this.boostArrSize] = (T) o;
-        } catch (ArrayIndexOutOfBoundsException var3) {
-            this.reorderArray();
-            this.boostArray[this.boostArrSize] = (T) o;
+    public boolean add(T o) {
+        if(boostArray.length<=boostArrSize){
+            reorder();
         }
-
-        ++this.boostArrSize;
-        return false;
+        this.boostArray[this.boostArrSize] = o;
+        this.boostArrSize++;
+        return true;
     }
 
+    private void reorder(){
+        DEFAULT_CAPACITY *=INCREMENT_CAPACITY;
+        Object[] newArr = new Object[this.DEFAULT_CAPACITY];
+
+        for (int i = 0; i < this.boostArrSize; i++) {
+            if (this.boostArray[i] != null) {
+                newArr[i] = this.boostArray[i];
+            }
+        }
+        this.boostArray = newArr;
+    }
     @Override
     public boolean addAll(Collection<? extends T> c) {
         return super.addAll(c);
@@ -127,7 +134,7 @@ public class BoostArray<T> extends Clim<T> {
 
     @Override
     public T[] toArray() {
-        return this.boostArray;
+        return (T[]) this.boostArray;
     }
 
     @Override
@@ -145,17 +152,6 @@ public class BoostArray<T> extends Clim<T> {
         this.boostArray = (T[]) new Object[DEFAULT_CAPACITY];
     }
 
-    private void reorderArray() {
-        this.DEFAULT_CAPACITY = (int) (this.DEFAULT_CAPACITY * this.INCREMENT_CAPACITY);
-        T[] newArr = (T[]) new Object[this.DEFAULT_CAPACITY];
-
-        for (int i = 0; i < this.boostArrSize; i++) {
-            if (this.boostArray[i] != null) {
-                newArr[i] = this.boostArray[i];
-            }
-        }
-        this.boostArray = newArr;
-    }
 
     public void sort() throws EmptyBoostArrayException {
         if (this.boostArrSize == 0) {
